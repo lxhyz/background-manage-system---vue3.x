@@ -13,3 +13,26 @@ export const changeUserState = (uid,type) => {
         method:'put'
     })
 }
+
+export const addUser = (data) => {
+    return serve({
+        url:'users',
+        method:'post',
+        data,
+    })
+}
+
+export const deleteUser = (id) => {
+    return serve({
+        url:`users/${id}`,
+        method:'delete',
+    })
+}
+
+export const editUser = (data) => {
+    return serve({
+        url:`users/${data.id}`,
+        method:'put',
+        data,
+    })
+}

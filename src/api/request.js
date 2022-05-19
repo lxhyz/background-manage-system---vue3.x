@@ -23,6 +23,7 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(response => {
     let {data,meta} = response.data
     if(meta.status == 200 || meta.status == 201){
+        ElMessage.success(meta.msg)
         return data
     } else {
         ElMessage.error(meta.msg)

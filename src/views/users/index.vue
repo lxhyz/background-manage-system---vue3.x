@@ -5,7 +5,8 @@
         <el-input :placeholder="$t('table.placeholder')" v-model="queryForm.query"></el-input>
       </el-col>
       <el-button type="primary" :icon="Search" @click="search">Search</el-button>
-      <el-button type="primary" >添加用户</el-button>
+      <el-button type="primary" @click="handlerAddUsers">添加用户</el-button>
+      <AddUsers v-model="dialogVisible" :dialogTitle="dialogTitle" :userInfo="userInfo" v-if="dialogVisible" @initUserList="initUserList"/>
     </el-row>
     <el-table :data="tableData" border stripe style="width: 100%" >
       <el-table-column :prop="item.prop" :label="$t(`table.${item.label}`)" v-for="(item,index) in options" :key="index" :width="item.width" align="center">
@@ -15,9 +16,9 @@
         <template  v-slot="{row}" v-else-if="item.prop === 'create_time'" >
           {{$filters.filterTime(row.create_time)}}
         </template>
-        <template #default v-else-if="item.prop === 'action'">
-          <el-button type="primary" plain>编辑</el-button>
-          <el-button type="success" plain>删除</el-button>
+        <template v-slot="{row}" v-else-if="item.prop === 'action'" >
+          <el-button type="primary" plain @click="handerEdit(row)">编辑</el-button>
+          <el-button type="success" plain @click="handlerUser(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -36,24 +37,52 @@
 </template>
 
 <script setup>
-import {ref,onMounted} from 'vue'
+import {ref,onMounted,watch} from 'vue'
 import {Search} from "@element-plus/icons-vue"
-import {getUser,changeUserState} from "@/api/user.js"
+import {getUser,changeUserState,deleteUser} from "@/api/user.js"
 import {options} from "./options.js"
 import { ElMessage } from 'element-plus'
+import AddUsers from "./components/addUsers.vue"
 const queryForm =ref({
   query:'',
   pagenum:1,
   pagesize:1
 })
 
+const dialogTitle = ref('')
+const userInfo = ref({})
+
 const tableData = ref([])
+
+const dialogVisible = ref(false)
 
 let total = ref(0)
 
 onMounted(() => {
   getUserList()
 })
+
+
+const initUserList = () => {
+  getUserList()
+}
+
+const handlerUser = async({id}) => {
+  await deleteUser(id).then(res => {
+    getUserList()
+  })
+}
+
+const handerEdit = (row) => {
+  userInfo.value = row
+  dialogTitle.value = '编辑用户'
+  dialogVisible.value = !dialogVisible.value
+}
+
+const handlerAddUsers = () => {
+  dialogTitle.value = '添加用户'
+  dialogVisible.value = !dialogVisible.value
+}
 
 const getUserList = async() => {
   await getUser(queryForm.value).then(res => {
